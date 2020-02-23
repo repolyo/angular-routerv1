@@ -1,0 +1,38 @@
+import {Component, OnInit} from '@angular/core';
+import {ActivatedRoute} from '@angular/router';
+import {Observable} from 'rxjs';
+import {map} from 'rxjs/operators';
+import {MessageService} from '../../message.service';
+import {SelectivePreloadingStrategyService} from '../../selective-preloading-strategy.service';
+
+@Component({
+  selector: 'app-admin-dashboard',
+  templateUrl: './admin-dashboard.component.html',
+  styleUrls: ['./admin-dashboard.component.css']
+})
+export class AdminDashboardComponent implements OnInit {
+  sessionId: Observable<string>;
+  token: Observable<string>;
+  modules: string[];
+
+  constructor(private route: ActivatedRoute,
+              preloadStrategy: SelectivePreloadingStrategyService,
+              private messageService: MessageService) {
+    this.modules = preloadStrategy.preloadedModules;
+  }
+
+  ngOnInit() {
+    // Capture the session ID if available
+    this.sessionId = this.route
+      .queryParamMap
+      .pipe(map(params => params.get('session_id') || 'None'));
+
+    // Capture the fragment if available
+    this.token = this.route
+      .fragment
+      .pipe(map(fragment => fragment || 'None'));
+
+    this.messageService.add('sessionId = ' + JSON.stringify(this.sessionId));
+    this.messageService.add('token = ' + JSON.stringify(this.token));
+  }
+}
